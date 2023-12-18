@@ -1,0 +1,9 @@
+AnalysisType: rule
+RuleID: Derived.Panther.Detection.Deleted
+BaseDetection: "Panther.Detection.Deleted"
+DynamicSeverities:
+  - ChangeTo: Critical
+    Conditions:
+      - KeyPath: actor.attributes.email
+        Condition: Equals
+        Value: "reid@greynoise.io"

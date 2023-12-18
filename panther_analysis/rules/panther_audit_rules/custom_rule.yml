@@ -1,0 +1,215 @@
+AnalysisType: rule
+Filename: custom_rule.py
+RuleID: "Panther.ReidSearchesThings"
+DisplayName: "Reid used Data Explorer"
+Enabled: true
+LogTypes:
+  - Panther.Audit
+Severity: Info
+Tags:
+  - DataModel
+  - Defense Evasion:Impair Defenses
+Reports:
+  MITRE ATT&CK:
+    - TA0005:T1562
+Description: Reid looked something up in the data explorer.
+Runbook: Ensure this change was approved and appropriate.
+Reference: https://docs.panther.com/system-configuration/panther-audit-logs/querying-and-writing-detections-for-panther-audit-logs
+SummaryAttributes:
+  - p_any_ip_addresses
+Tests:
+  -
+    Name: Ben Searches
+    ExpectedResult: false
+    Log:
+      {
+        "actiondescription": "Executes an SQL query against a selected data lake database",
+        "actionname": "EXECUTE_DATA_LAKE_QUERY",
+        "actionparams": {
+          "dynamic": {
+            "input": {
+              "databaseName": "panther_monitor.public",
+              "sql": "(redacted)"
+            }
+          },
+          "static": {}
+        },
+        "actionresult": "SUCCEEDED",
+        "actor": {
+          "attributes": {
+            "email": "ben.airey@panther.io",
+            "emailVerified": false,
+            "roleId": "2c9e630c-7356-45a0-a7a3-f748f6ef92a5",
+            "roleName": "Admin"
+          },
+          "id": "PantherSSO_ben.airey@panther.io",
+          "name": "ben.airey@panther.io",
+          "type": "USER"
+        },
+        "p_any_actor_ids": [
+          "PantherSSO_ben.airey@panther.io"
+        ],
+        "p_any_emails": [
+          "ben.airey@panther.io"
+        ],
+        "p_any_ip_addresses": [
+          "18.68.45.45",
+          "45.44.113.199"
+        ],
+        "p_any_usernames": [
+          "ben.airey",
+          "ben.airey@panther.io"
+        ],
+        "p_event_time": "2023-12-15 19:43:56.45",
+        "p_log_type": "Panther.Audit",
+        "p_parse_time": "2023-12-15 19:47:35.482",
+        "p_row_id": "e69c3096c870d2b794e3f3b01c50",
+        "p_schema_version": 0,
+        "p_source_file": {
+          "aws_s3_bucket": "panther-bootstrap-1bu14ff5-pantherauditlogsbucket-1opnj0i7rss4x",
+          "aws_s3_key": "panther-audit-logs/2023/12/15/19/panther-audit-logs-firehose-289-2023-12-15-19-43-54-2e447116-32cc-4cd6-8ffa-4e65d18bb113"
+        },
+        "p_source_id": "d1b15d33-a45d-4d0c-af1a-524117aad55b",
+        "p_source_label": "panther-audit-logs-us-west-2",
+        "p_udm": {
+          "source": {
+            "address": "45.44.113.199",
+            "ip": "45.44.113.199"
+          },
+          "user": {
+            "email": "ben.airey@panther.io"
+          }
+        },
+        "pantherversion": "1.94.2",
+        "sourceip": "45.44.113.199",
+        "timestamp": "2023-12-15 19:43:56.45",
+        "useragent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "xforwardedfor": [
+          "45.44.113.199",
+          "18.68.45.45"
+        ]
+      }
+  -
+    Name: Reid Searches
+    ExpectedResult: true
+    Log:
+      {
+        "actiondescription": "Executes an SQL query against a selected data lake database",
+        "actionname": "EXECUTE_DATA_LAKE_QUERY",
+        "actionparams": {
+          "dynamic": {
+            "input": {
+              "databaseName": "panther_monitor.public",
+              "sql": "(redacted)"
+            }
+          },
+          "static": {}
+        },
+        "actionresult": "SUCCEEDED",
+        "actor": {
+          "attributes": {
+            "email": "reid@greynoise.io",
+            "emailVerified": false,
+            "roleId": "2c9e630c-7356-45a0-a7a3-f748f6ef92a5",
+            "roleName": "Admin"
+          },
+          "id": "PantherSSO_ben.airey@panther.io",
+          "name": "ben.airey@panther.io",
+          "type": "USER"
+        },
+        "p_any_actor_ids": [
+          "PantherSSO_ben.airey@panther.io"
+        ],
+        "p_any_emails": [
+          "ben.airey@panther.io"
+        ],
+        "p_any_ip_addresses": [
+          "18.68.45.45",
+          "45.44.113.199"
+        ],
+        "p_any_usernames": [
+          "ben.airey",
+          "ben.airey@panther.io"
+        ],
+        "p_event_time": "2023-12-15 19:43:56.45",
+        "p_log_type": "Panther.Audit",
+        "p_parse_time": "2023-12-15 19:47:35.482",
+        "p_row_id": "e69c3096c870d2b794e3f3b01c50",
+        "p_schema_version": 0,
+        "p_source_file": {
+          "aws_s3_bucket": "panther-bootstrap-1bu14ff5-pantherauditlogsbucket-1opnj0i7rss4x",
+          "aws_s3_key": "panther-audit-logs/2023/12/15/19/panther-audit-logs-firehose-289-2023-12-15-19-43-54-2e447116-32cc-4cd6-8ffa-4e65d18bb113"
+        },
+        "p_source_id": "d1b15d33-a45d-4d0c-af1a-524117aad55b",
+        "p_source_label": "panther-audit-logs-us-west-2",
+        "p_udm": {
+          "source": {
+            "address": "45.44.113.199",
+            "ip": "45.44.113.199"
+          },
+          "user": {
+            "email": "ben.airey@panther.io"
+          }
+        },
+        "pantherversion": "1.94.2",
+        "sourceip": "45.44.113.199",
+        "timestamp": "2023-12-15 19:43:56.45",
+        "useragent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "xforwardedfor": [
+          "45.44.113.199",
+          "18.68.45.45"
+        ]
+      }
+  -
+    Name: Non-Search event
+    ExpectedResult: false
+    Log:
+      {
+        "actiondescription": "User signed in through the Panther Console.",
+        "actiondetails": {
+          "SignInType": "SSO"
+        },
+        "actionname": "SIGN_IN",
+        "actionresult": "SUCCEEDED",
+        "actor": {
+          "attributes": {
+            "email": "ben.airey@panther.io",
+            "emailVerified": false,
+            "roleId": "2c9e630c-7356-45a0-a7a3-f748f6ef92a5",
+            "roleName": "Admin"
+          },
+          "id": "PantherSSO_ben.airey@panther.io",
+          "name": "Ben Airey",
+          "type": "USER"
+        },
+        "p_any_actor_ids": [
+          "PantherSSO_ben.airey@panther.io"
+        ],
+        "p_any_emails": [
+          "ben.airey@panther.io"
+        ],
+        "p_any_usernames": [
+          "Ben Airey",
+          "ben.airey"
+        ],
+        "p_event_time": "2023-12-16 00:21:09.884",
+        "p_log_type": "Panther.Audit",
+        "p_parse_time": "2023-12-16 00:22:35.267",
+        "p_row_id": "6617abe29a0188829fe0c4b11c15",
+        "p_schema_version": 0,
+        "p_source_file": {
+          "aws_s3_bucket": "panther-bootstrap-1bu14ff5-pantherauditlogsbucket-1opnj0i7rss4x",
+          "aws_s3_key": "panther-audit-logs/2023/12/16/00/panther-audit-logs-firehose-289-2023-12-16-00-20-41-0e436cf7-0f04-4bd7-aca1-38489a1971c5"
+        },
+        "p_source_id": "d1b15d33-a45d-4d0c-af1a-524117aad55b",
+        "p_source_label": "panther-audit-logs-us-west-2",
+        "p_udm": {
+          "user": {
+            "email": "ben.airey@panther.io",
+            "name": "Ben Airey"
+          }
+        },
+        "pantherversion": "1.94.2",
+        "sourceip": "",
+        "timestamp": "2023-12-16 00:21:09.884"
+      }
