@@ -21,10 +21,12 @@ echo $HAS_CHANGES
 
 if [ HAS_CHANGES ]
     then
+        echo "Found changes! Creating a PR..."
         git commit -m "Updating Panther Analysis to version $LATEST_TAG"
         git push --set-upstream origin panther_analysis_sync_v3.31.0
         gh pr create --title "Update Panther Analysis to $LATEST_TAG" --fill --base $YOUR_MAIN_BRANCH --repo $YOUR_REPO
     else
+        echo "No changes found. Aborting."
         git checkout $YOUR_MAIN_BRANCH
         git branch --delete $BRANCH_NAME
 fi
