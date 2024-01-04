@@ -17,6 +17,9 @@ jobs:
       github.repository != 'panther-labs/panther-analysis'
     runs-on: ubuntu-latest
     steps:
+      ## CRAETE LOCAL REPO
+      - name: Create Local Repo
+        uses: actions/checkout@v4
       ## CHECK LATEST RELEASE
       - id: get_tag
         name: Get Latest Release
