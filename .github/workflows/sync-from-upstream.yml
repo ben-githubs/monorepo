@@ -30,6 +30,12 @@ jobs:
             | tail --lines=1 \
             | cut -d '/' -f 3)
           echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+      ## SET GIT CONFIG
+      - id: set_config
+        name: Set Git Identity
+        run: |
+          git config user.email = "ghaction@github.com"
+          git config user.name = "Github Action"
       ## CREATE NEW BRANCH
       - id: create_branch
         name: Create New Branch
