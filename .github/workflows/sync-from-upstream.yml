@@ -8,6 +8,8 @@ on:
 
 env:
   YOUR_REPO_PRIMARY_BRANCH_NAME: "master"
+  YOUR_REPO_NAME: "ben-githubs/monorepo"
+  PATH_TO_PA: "panther_analysis"
 
 jobs:
   check_upstream:
@@ -15,91 +17,34 @@ jobs:
       github.repository != 'panther-labs/panther-analysis'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v7
-        id: set_upstream
-        name: Check Upstream
-        with:
-          script: |
-              const fs = require('fs');
-              const upstreamLatest = await github.rest.repos.getLatestRelease({
-              owner: 'panther-labs',
-              repo: 'panther-analysis'
-              })
-              fs.appendFileSync(
-              process.env['GITHUB_OUTPUT'],
-              'latest-release=' +  upstreamLatest.data.tag_name + '\n');
-      ## CREATE A BRANCH
-      - uses: peterjgrainger/action-create-branch@v2.4.0
-        id: create_a_branch
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          branch: 'sync_upstream_${{steps.set_upstream.outputs.latest-release}}'
-      # Checkout upstream release to new branch
-      # Checkout this repo into the branch
-      - name: Checkout your local repo in PR branch
-        uses: actions/checkout@v4
-        with:
-          ref: 'sync_upstream_${{steps.set_upstream.outputs.latest-release}}'
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Setup git user
+      ## CHECK LATEST RELEASE
+      - id: get_tag
+        name: Get Latest Release
         run: |
-          git config --global user.name "action"
-          git config --global user.email "action@example.com"
-      - name: Sync with upstream release
-        id: sync
+          LATEST_TAG=$(git -c 'versionsort.suffix=-' \
+            ls-remote --exit-code --refs --sort='version:refname' --tags https://github.com/panther-labs/panther-analysis.git '*.*.*' \
+            | tail --lines=1 \
+            | cut -d '/' -f 3)
+          echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+      ## CREATE NEW BRANCH
+      - id: create_branch
+        name: Create New Branch
         run: |
-          git subtree pull --prefix panther_analysis https://github.com/panther-labs/panther-analysis.git main --squash
-          echo "has_new_commits=$(git status --porcelain)" >> "$GITHUB_OUTPUT"
-          echo $(git status --porcelain)
-
-      # Create a PR from this branch back to this fork's primary branch
-      - uses: actions/github-script@v7
-        id: create_pr
-        name: Create a PR to bring upstream changes into the local repo primary branch
-        if: steps.sync.outputs.has_new_commits
-        with:
-          result-encoding: string
-          script: |
-            const fs = require('fs');
-            try {
-              const response = await github.rest.pulls.create({
-                owner: '${{github.repository_owner}}',
-                repo: '${{  github.event.repository.name }}',
-                title: 'sync this fork to panther-labs/panther-analysis ${{steps.set_upstream.outputs.latest-release}}',
-                head: 'sync_upstream_${{steps.set_upstream.outputs.latest-release}}',
-                base: '${{env.YOUR_REPO_PRIMARY_BRANCH_NAME}}',
-              });
-            } catch(e) {
-              if (e.response && e.response.data && e.response.data.errors && e.response.data.errors.length > 0 && e.response.data.errors[0].message && e.response.data.errors[0].message.includes('No commits between')) {
-                fs.appendFileSync(
-                  process.env['GITHUB_OUTPUT'],
-                  'pr_state=no-updates\n');
-              } else if (e.response && e.response.data && e.response.data.errors && e.response.data.errors.length > 0 && e.response.data.errors[0].message && e.response.data.errors[0].message.includes('A pull request already exists for')) {
-                fs.appendFileSync(
-                  process.env['GITHUB_OUTPUT'],
-                  'pr_state=update-pr-already-exists\n');
-              } else {
-                fs.appendFileSync(
-                  process.env['GITHUB_OUTPUT'],
-                  'pr_state=error\n');
-                console.log(e);
-              }
-            }
-      - id: pr_not_needed_already_exists
-        name: PR for latest release already exists
-        if: ${{ steps.create_pr.outputs.pr_state == 'update-pr-already-exists' }}
+          BRANCH_NAME="panther_analysis_sync_${{ steps.get_tag.outputs.tag }}"
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          git branch -b $BRANCH_NAME
+          git subtree pull --prefix {{ env.PATH_TO_PA }} https://github.com/panther-labs/panther-analysis.git ${{ steps.get_tag.outputs.tag }} --squash -m "Updating Panther Analysis to version ${{ steps.get_tag.outputs.tag }}"
+      ## CHECK FOR UPDATES
+      - id: check_updates
+        name: Check for Updates
         run: |
-          echo "PR for latest release was previously created and is not closed"
-      - id: pr_not_needed_in_sync
-        name: Local repo already synced to latest release
-        if: ${{ steps.create_pr.outputs.pr_state == 'no-updates' }}
+          [[ ! -z $(git status --porcelain) ]] && HAS_CHANGES="yes" || HAS_CHANGES="no"
+          echo "has_changes=$HAS_CHANGES ">> $GITHUB_OUTPUT
+      ## PUSH AND MAKE PR
+      - id: create_pr
+        name: Push and Create PR
+        if: ${{ steps.check_updates.outputs.has_changes == 'yes' }}
         run: |
-          echo "Local repo in sync with latest upstream release"  
-      - id: pr_create_error
-        name: Create PR step had an error
-        if: ${{ steps.create_pr.outputs.pr_state == 'error' }}
-        run: |
-          echo "unhandled exception in PR create step. Check output of that step."
-          exit 128
+          git commit -m "Updating Panther Analysis to version $LATEST_TAG"
+          git push --set-upstream origin panther_analysis_sync_v3.31.0
+          gh pr create --title "Update Panther Analysis to $LATEST_TAG" --fill --base $YOUR_MAIN_BRANCH --repo $YOUR_REPO
