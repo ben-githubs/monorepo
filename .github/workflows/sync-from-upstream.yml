@@ -32,6 +32,8 @@ jobs:
       - id: create_branch
         name: Create New Branch
         run: |
+          pwd
+          ls
           BRANCH_NAME="panther_analysis_sync_${{ steps.get_tag.outputs.tag }}"
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
           git checkout -b $BRANCH_NAME
