@@ -6,16 +6,15 @@ on:
     - cron: "00 15 * * 3"
   workflow_dispatch: # or on button click
 
-env:
-  YOUR_REPO_PRIMARY_BRANCH_NAME: "master"
-  YOUR_REPO_NAME: "ben-githubs/monorepo"
-  PATH_TO_PA: "panther_analysis"
-
 jobs:
   check_upstream:
     if: | 
       github.repository != 'panther-labs/panther-analysis'
     runs-on: ubuntu-latest
+    env:
+      YOUR_REPO_PRIMARY_BRANCH_NAME: "master"
+      YOUR_REPO_NAME: "ben-githubs/monorepo"
+      PATH_TO_PA: "panther_analysis"
     steps:
       ## CRAETE LOCAL REPO
       - name: Create Local Repo
